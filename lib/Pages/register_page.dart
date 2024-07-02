@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:wealthwise/Pages/LoginPage.dart';
+import 'package:wealthwise/Pages/login_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lottie/lottie.dart';
+import 'package:wealthwise/Pages/card_detail_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -14,46 +16,54 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _fnameController = TextEditingController();
-  final TextEditingController _lnameController = TextEditingController();
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _cpasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
   
   @override
   void dispose() {
     // Clean up the controllers when the widget is disposed.
     _emailController.dispose();
-    _fnameController.dispose();
-    _lnameController.dispose();
+    firstNameController.dispose();
+    lastNameController.dispose();
     _passwordController.dispose();
 
     super.dispose();
   }
   bool _obscureText = true;
-  bool _AnimationShower = false;
+  bool animationShower = false;
 
-  void _togglePasswordicon() {
+  void _togglePasswordIcon() {
     setState(() {
       _obscureText = !_obscureText;
     });
   }
   //register function
-  Future<void> registerUser(BuildContext context, String first_name,String last_name, String email, String password)async{
+  Future<void> registerUser(BuildContext context, String firstName,String lastName, String email, String password)async{
     //change the url to the hosting machine's ipv4 address when running on the physical device..
-    var url = Uri.parse('http://192.168.29.244:8000/api/register');
+    var url = Uri.parse('http://10.0.2.2:8000/api/register');
     var response = await http.post(url, body: {
-      'first_name': first_name,
-      'last_name': last_name,
+      'first_name': firstName,
+      'last_name': lastName,
       'email': email,
       'password': password,
     });
     if (response.statusCode ==200){
-      print('user registered');
+
+      var responseBody = json.decode(response.body);
+      var payload = responseBody['payload'];
+      var userId = payload['id'].toString();
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_id', userId);
+      print('User ID: $userId');
+
       setState(() {
-        _AnimationShower = true;
+        animationShower = true;
       });
       Future.delayed(const Duration(seconds: 1),(){
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage(),));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const CardDetails(),));
       });
     }else{
       var responseBody = jsonDecode(response.body);
@@ -70,7 +80,11 @@ class _RegisterPageState extends State<RegisterPage> {
   }
   @override
   Widget build(BuildContext context) {
-    final _registerKey = GlobalKey<FormState>();
+    final registerKey = GlobalKey<FormState>();
+
+    //sizing variables
+    double height = MediaQuery.of(context).size.height;
+
     return SafeArea(
         child: Scaffold(
           resizeToAvoidBottomInset: true,
@@ -82,7 +96,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   children: [
                     Container(
                     width: double.maxFinite,
-                    height: 205,
+                    height: height * 0.35,
                     decoration: const BoxDecoration(
                         image: DecorationImage(image: AssetImage('Assets/Images/Register.jpg'),
                             fit: BoxFit.cover
@@ -95,7 +109,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         width: 300,
                         height: 610,
                           child: Form(
-                            key: _registerKey,
+                            key: registerKey,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -107,7 +121,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                  Padding(
                                   padding: const EdgeInsets.only(top: 20),
                                   child: TextFormField(
-                                    controller: _fnameController,
+                                    controller: firstNameController,
                                     decoration: const InputDecoration(
                                       contentPadding: EdgeInsets.symmetric(horizontal: 10,vertical: 10),
                                       border: OutlineInputBorder(
@@ -117,13 +131,13 @@ class _RegisterPageState extends State<RegisterPage> {
                                       hintStyle: TextStyle(fontSize: 12),
                                         prefixIcon: Icon(Icons.person)
                                     ),
-                                    validator: (fname)=> fname!.isEmpty? "Please Give us your First name": null,
+                                    validator: (firstName)=> firstName!.isEmpty? "Please Give us your First name": null,
                                   ),
                                 ),
                                  Padding(
                                   padding: const EdgeInsets.only(top: 10),
                                   child: TextFormField(
-                                    controller: _lnameController,
+                                    controller: lastNameController,
                                     decoration: const InputDecoration(
                                       contentPadding: EdgeInsets.symmetric(horizontal: 10,vertical: 10),
                                       border: OutlineInputBorder(
@@ -133,7 +147,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       hintStyle: TextStyle(fontSize: 12),
                                       prefixIcon: Icon(Icons.person)
                                     ),
-                                    validator: (lname)=> lname!.isEmpty? "Please us your Last name": null,
+                                    validator: (lastName)=> lastName!.isEmpty? "Please us your Last name": null,
                                   ),
                                 ),
                                 Padding(
@@ -165,7 +179,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       hintText: "Password",
                                       hintStyle: const TextStyle(fontSize: 12),
                                       prefixIcon: const Icon(Icons.password),
-                                      suffixIcon: IconButton(onPressed: _togglePasswordicon, icon: Icon(
+                                      suffixIcon: IconButton(onPressed: _togglePasswordIcon, icon: Icon(
                                         _obscureText ? Icons.visibility_off_outlined : Icons
                                             .visibility_outlined,
                                       ))
@@ -176,7 +190,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                  Padding(
                                   padding:const EdgeInsets.only(top: 10),
                                   child: TextFormField(
-                                    controller: _cpasswordController,
+                                    controller: confirmPasswordController,
                                     obscureText: _obscureText,
                                     decoration: InputDecoration(
                                         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -186,14 +200,14 @@ class _RegisterPageState extends State<RegisterPage> {
                                         hintText: "Confirm Password",
                                         hintStyle: const TextStyle(fontSize: 12),
                                         prefixIcon: const Icon(Icons.password),
-                                        suffixIcon: IconButton(onPressed: _togglePasswordicon,
+                                        suffixIcon: IconButton(onPressed: _togglePasswordIcon,
                                             icon: Icon(
                                               _obscureText ? Icons.visibility_off_outlined : Icons
                                                   .visibility_outlined,
                                             ))
                                     ),
-                                    validator: (cpassword) =>
-                                    cpassword!.isEmpty
+                                    validator: (confirmPassword) =>
+                                    confirmPassword!.isEmpty
                                         ? "Please have retype your password"
                                         : null,
                                   ),
@@ -208,20 +222,20 @@ class _RegisterPageState extends State<RegisterPage> {
                                           child:Text('Terms And Conditions',style: TextStyle(color: Colors.blue,fontSize: 12),)
                                       ),
                                       TextButton(onPressed: () {
-                                        if( _registerKey.currentState!.validate() ){
-                                          String first_name = _fnameController.text;
-                                          String last_name = _lnameController.text;
+                                        if( registerKey.currentState!.validate() ){
+                                          String firstName = firstNameController.text;
+                                          String lastName = lastNameController.text;
                                           String email = _emailController.text;
-                                          String enteredpass = _passwordController.text;
-                                          String centeredpass = _cpasswordController.text;
+                                          String enteredPassword = _passwordController.text;
+                                          String centeredPass = confirmPasswordController.text;
 
-                                          if(enteredpass == centeredpass){
-                                            String password =centeredpass;
-                                            print('First Name: $first_name');
-                                            print('Last Name: $last_name');
+                                          if(enteredPassword == centeredPass){
+                                            String password =centeredPass;
+                                            print('First Name: $firstName');
+                                            print('Last Name: $lastName');
                                             print('Email: $email');
                                             print('Password: $password');
-                                            registerUser(context, first_name, last_name, email, password);
+                                            registerUser(context, firstName, lastName, email, password);
 
                                           }else{
                                             //make a notification that the passwords do not match
@@ -268,7 +282,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
               ),
                 Visibility(
-                  visible: _AnimationShower,
+                  visible: animationShower,
                   child: Center(
                     child: SizedBox(
                       width: 200,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:wealthwise/Pages/RegisterPage.dart';
+import 'package:wealthwise/Pages/register_page.dart';
 import 'package:http/http.dart' as http;
-import 'card_detail_page.dart';
+import 'package:wealthwise/Pages/home.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:lottie/lottie.dart';
 
@@ -21,13 +21,13 @@ class _LoginPageState extends State<LoginPage> {
   bool _showCheckAnimation = false;
   bool _showErrorAnimation = false;
 
-  void _togglePasswordicon(){
+  void _togglePasswordIcon(){
     setState(() {
       _obscureText = !_obscureText;
     });
   }
 
-  Future<void> LoginUser(String email, String password)async{
+  Future<void> loginUser(String email, String password)async{
   try {
     var url = Uri.parse('http://192.168.29.244:8000/api/login');
     var response = await http.post(url, body: {
@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.push(context, PageTransition(
             type: PageTransitionType.fade,
             duration: const Duration(milliseconds: 400),
-            child: const CardDetails()));
+            child: const Home()));
         setState(() {
           _showCheckAnimation = false;
         });
@@ -75,21 +75,27 @@ class _LoginPageState extends State<LoginPage> {
   }
   @override
   Widget build(BuildContext context) {
-    final GlobalKey<FormState> _loginFormKey = GlobalKey<FormState>();
+    final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
+
+    //sizing variables
+    final height = MediaQuery.of(context).size.height;
+
     return SafeArea(
           child: Scaffold(
             resizeToAvoidBottomInset: true,
+            backgroundColor: Colors.white,
             body: Container(
               color: Colors.white,
               child: Stack(
                 children: [
                   SingleChildScrollView(
                   child: Form(
-                    key: _loginFormKey,
+                    key: loginFormKey,
                     child: Column(
-                      children: [Container(
+                      children: [
+                        Container(
                         width: double.maxFinite,
-                        height: 360,
+                        height: height * 0.5,
                         decoration: const BoxDecoration(image: DecorationImage(image: AssetImage('Assets/Images/LoginBackground.jpg'),
                           fit: BoxFit.cover,
                         ),
@@ -137,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
                                           hintText: "Password",
                                           hintStyle: const TextStyle(fontSize: 12),
                                           prefixIcon: const Icon(Icons.password),
-                                          suffixIcon: IconButton(onPressed: _togglePasswordicon,
+                                          suffixIcon: IconButton(onPressed: _togglePasswordIcon,
                                               icon: Icon(
                                                 _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                                               )
@@ -151,11 +157,11 @@ class _LoginPageState extends State<LoginPage> {
                                     children: [
                                       const TextButton(onPressed: null, child: Text('Forgot Password ?',style: TextStyle(fontSize: 12,color: Colors.blue),),),
                                       ElevatedButton(onPressed: () {
-                                        if(_loginFormKey.currentState!.validate()){
+                                        if(loginFormKey.currentState!.validate()){
                                           String email = _emailController.text;
                                           String password = _passwordController.text;
 
-                                          LoginUser(email, password);
+                                          loginUser(email, password);
                                         }else{
                                           null;
                                         }

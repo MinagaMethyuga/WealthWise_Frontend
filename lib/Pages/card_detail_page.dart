@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:wealthwise/Pages/home.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CardDetails extends StatefulWidget {
   const CardDetails({super.key});
@@ -14,11 +15,11 @@ class _CardDetailsState extends State<CardDetails> with SingleTickerProviderStat
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
 
-  final TextEditingController _AccName = TextEditingController();
-  final TextEditingController _AccBalance = TextEditingController();
+  final TextEditingController accName = TextEditingController();
+  final TextEditingController accBalance = TextEditingController();
   String _accountName = '';
-  String _AccountBalancevalue = '';
-  String _AccountBalance = 'LKR 0.00';
+  String accountBalanceValue = '';
+  String accountBalance = 'LKR 0.00';
 
   //slider animation
   @override
@@ -46,13 +47,54 @@ class _CardDetailsState extends State<CardDetails> with SingleTickerProviderStat
 
   @override
   void dispose() {
-    _AccName.dispose();
-    _AccBalance.dispose();
+    accName.dispose();
+    accBalance.dispose();
     _controller.dispose();
     super.dispose();
   }
+
+  Future<void> addUserDetails(String accountName, String accountBalance) async {
+    try{
+      if (accountName.isNotEmpty && accountBalance.isNotEmpty) {
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+        var userId = prefs.get('User_ID').toString();
+        var url = Uri.parse('http://10.0.2.2:8000/api/details');
+        var response = await http.post(url, body: {
+          'user_id': userId,
+          'account_name': accountName,
+          'account_balance': accountBalance,
+        });
+        if (response.statusCode ==200){
+          print('hello boi its working nigga');
+        }else{
+          print('fffs');
+        }
+
+      }else{
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: const Text('Please fill all the fields!'),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 3),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              )
+          ),
+        );
+      }
+    }
+    catch (e) {
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    //sizing variables
+    double height = MediaQuery.of(context).size.height;
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: true,
@@ -72,10 +114,10 @@ class _CardDetailsState extends State<CardDetails> with SingleTickerProviderStat
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 285.0),
+                      padding: EdgeInsets.only(top: height * 0.4),
                       child: TextButton(
                           onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const Home(),));
+                            addUserDetails(_accountName, accountBalanceValue);
                           },
                         style: const ButtonStyle(backgroundColor:MaterialStatePropertyAll(Colors.lightBlue),padding: MaterialStatePropertyAll(EdgeInsets.only(top: 15,bottom: 15,left: 40,right: 40))),
                           child:
@@ -87,7 +129,7 @@ class _CardDetailsState extends State<CardDetails> with SingleTickerProviderStat
               ),
               AnimatedContainer(
                 width: double.maxFinite,
-                height: _expanded ? 630 : 0,
+                height: _expanded ? height * 0.8 : 0,
                 duration: const Duration(seconds: 1),
                 curve: Curves.easeInOut,
                 decoration: const BoxDecoration(
@@ -137,7 +179,7 @@ class _CardDetailsState extends State<CardDetails> with SingleTickerProviderStat
                             top: 85,
                             left: 85,
                             child: Text(
-                              _AccountBalance.isEmpty ? 'LKR 0.00' : _AccountBalance,
+                              accountBalance.isEmpty ? 'LKR 0.00' : accountBalance,
                               style: const TextStyle(fontSize: 26, color: Colors.white),
                             ),
                           ),
@@ -165,7 +207,7 @@ class _CardDetailsState extends State<CardDetails> with SingleTickerProviderStat
                               ),
                             ),
                             TextFormField(
-                              controller: _AccName,
+                              controller: accName,
                               onChanged: (value) {
                                 setState(() {
                                   _accountName = value;
@@ -203,11 +245,11 @@ class _CardDetailsState extends State<CardDetails> with SingleTickerProviderStat
                               ),
                             ),
                             TextFormField(
-                              controller: _AccBalance,
+                              controller: accBalance,
                               onChanged: (value) {
                                 setState(() {
-                                  _AccountBalancevalue = value;
-                                  _AccountBalance = 'LKR $_AccountBalancevalue';
+                                  accountBalanceValue = value;
+                                  accountBalance = 'LKR $accountBalanceValue';
                                 });
                               },
                               decoration: const InputDecoration(

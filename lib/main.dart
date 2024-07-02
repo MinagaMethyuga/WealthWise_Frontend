@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:wealthwise/Pages/card_detail_page.dart';
 import 'package:wealthwise/Pages/profile_page.dart';
 import 'package:wealthwise/Theme/theme_provider.dart';
-import 'Pages/RegisterPage.dart';
+import 'Pages/register_page.dart';
 import 'Pages/home.dart';
-import 'Pages/LoginPage.dart';
+import 'Pages/login_page.dart';
 import 'Pages/transaction_page.dart';
 import 'Theme/theme.dart';
 
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
           darkTheme: darkMode,
           themeMode: themeProvider.themeMode,
           debugShowCheckedModeBanner: false,
-          initialRoute: '/profile',
+          initialRoute: '/home',
           routes: {
             '/register': (context) => const RegisterPage(),
             '/details': (context) => const CardDetails(),

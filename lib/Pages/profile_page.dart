@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wealthwise/Pages/LoginPage.dart';
+import 'package:wealthwise/Pages/login_page.dart';
 import '../Components/Navigation/bottom_navigation.dart';
 import '../Components/Navigation/top_navigation.dart';
 import '../Components/Profile/profile_card.dart';
