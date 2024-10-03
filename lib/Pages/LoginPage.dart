@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:wealthwise/Pages/register_page.dart';
+import 'package:wealthwise/Pages/RegisterPage.dart';
 import 'package:http/http.dart' as http;
 import 'package:wealthwise/Pages/home.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:lottie/lottie.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -21,81 +24,87 @@ class _LoginPageState extends State<LoginPage> {
   bool _showCheckAnimation = false;
   bool _showErrorAnimation = false;
 
-  void _togglePasswordIcon(){
+  void _togglePasswordicon(){
     setState(() {
       _obscureText = !_obscureText;
     });
   }
+  Future<void> LoginUser(String email, String password) async {
+    try {
+      var url = Uri.parse('http://192.168.48.244:8000/api/login');
+      var response = await http.post(url, body: {
+        'email': email,
+        'password': password,
+      });
 
-  Future<void> loginUser(String email, String password)async{
-  try {
-    var url = Uri.parse('http://192.168.29.244:8000/api/login');
-    var response = await http.post(url, body: {
-      'email': email,
-      'password': password,
-    });
-    if (response.statusCode == 200) {
-      setState(() {
-        _showCheckAnimation = !_showCheckAnimation;
-      });
-      Future.delayed(const Duration(seconds: 1), () {
-        Navigator.push(context, PageTransition(
-            type: PageTransitionType.fade,
-            duration: const Duration(milliseconds: 400),
-            child: const Home()));
+      if (response.statusCode == 200) {
+        // Decode the JSON response
+        var responseBody = jsonDecode(response.body);
+
+        // Extract user ID from the response
+        int userId = responseBody['user']['id'];
+
+        // Save user ID to local storage
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('userId', userId);
+
         setState(() {
-          _showCheckAnimation = false;
+          _showCheckAnimation = !_showCheckAnimation;
         });
-      });
-    }
-    else {
-      setState(() {
-        _showErrorAnimation = !_showErrorAnimation;
-      });
-      Future.delayed(const Duration(seconds: 2), () {
+
+        Future.delayed(const Duration(seconds: 1), () {
+          Navigator.push(context, PageTransition(
+              type: PageTransitionType.fade,
+              duration: const Duration(milliseconds: 400),
+              child: const Home()));
+          setState(() {
+            _showCheckAnimation = false;
+          });
+        });
+      } else {
         setState(() {
-          _showErrorAnimation = false;
+          _showErrorAnimation = !_showErrorAnimation;
         });
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Wrong User Credentials'),
-          backgroundColor: Colors.redAccent,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 3),
-           shape: RoundedRectangleBorder(
-             borderRadius: BorderRadius.circular(10),
-           )
-        ),
-      );
+
+        Future.delayed(const Duration(seconds: 2), () {
+          setState(() {
+            _showErrorAnimation = false;
+          });
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: const Text('Wrong User Credentials'),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 3),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              )
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error: $e');
     }
-  } catch (e) {
-    print('Error: $e');
-  }
   }
   @override
   Widget build(BuildContext context) {
-    final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
-
-    //sizing variables
-    final height = MediaQuery.of(context).size.height;
-
+    final GlobalKey<FormState> _loginFormKey = GlobalKey<FormState>();
     return SafeArea(
           child: Scaffold(
             resizeToAvoidBottomInset: true,
-            backgroundColor: Colors.white,
             body: Container(
               color: Colors.white,
               child: Stack(
                 children: [
                   SingleChildScrollView(
                   child: Form(
-                    key: loginFormKey,
+                    key: _loginFormKey,
                     child: Column(
-                      children: [
-                        Container(
+                      children: [Container(
                         width: double.maxFinite,
-                        height: height * 0.5,
+                        height: 360,
                         decoration: const BoxDecoration(image: DecorationImage(image: AssetImage('Assets/Images/LoginBackground.jpg'),
                           fit: BoxFit.cover,
                         ),
@@ -143,7 +152,7 @@ class _LoginPageState extends State<LoginPage> {
                                           hintText: "Password",
                                           hintStyle: const TextStyle(fontSize: 12),
                                           prefixIcon: const Icon(Icons.password),
-                                          suffixIcon: IconButton(onPressed: _togglePasswordIcon,
+                                          suffixIcon: IconButton(onPressed: _togglePasswordicon,
                                               icon: Icon(
                                                 _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                                               )
@@ -157,11 +166,11 @@ class _LoginPageState extends State<LoginPage> {
                                     children: [
                                       const TextButton(onPressed: null, child: Text('Forgot Password ?',style: TextStyle(fontSize: 12,color: Colors.blue),),),
                                       ElevatedButton(onPressed: () {
-                                        if(loginFormKey.currentState!.validate()){
+                                        if(_loginFormKey.currentState!.validate()){
                                           String email = _emailController.text;
                                           String password = _passwordController.text;
 
-                                          loginUser(email, password);
+                                          LoginUser(email, password);
                                         }else{
                                           null;
                                         }

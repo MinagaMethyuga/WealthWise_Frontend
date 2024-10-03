@@ -3,6 +3,10 @@ import '../Components/Home/monthly_payment_card.dart';
 import '../Components/Home/transaction_card.dart';
 import '../Components/Navigation/bottom_navigation.dart';
 import '../Components/Navigation/top_navigation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -12,6 +16,56 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
+  String accountName = '';
+  String accountBalance = '';
+  String accountincome = '';
+  String accountexpense = '';
+
+  @override
+  void initState() {
+    super.initState();
+    upDateCard();
+  }
+
+  //card refreshing
+  Future<void> upDateCard() async {
+    try{
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      var userId = prefs.get('userId').toString();
+
+      var url = Uri.parse('http://192.168.48.244:8000/api/homeCard?user_id=$userId');
+      var response = await http.get(url);
+
+      if(response.statusCode == 200){
+        var data = json.decode(response.body);
+        var fetchedAccountName = data['payload']['account_name'];
+        var fetchedAccountBalance = data['payload']['account_balance'];
+        var fetchedicome = data['payload']['monthly_income'];
+        var fetchedExpense = data['payload']['total_expenses'];
+
+        print('account Name:$fetchedAccountName');
+        print('account balance:$fetchedAccountBalance');
+        print('income:$fetchedicome');
+        print('expense:$fetchedExpense');
+
+        setState(() {
+          accountName =fetchedAccountName;
+          accountBalance =fetchedAccountBalance.toString();
+          accountincome = fetchedicome.toString();
+          accountexpense = fetchedExpense.toString();
+        });
+      }else{
+        print('Oops something is not right');
+      }
+      }
+    catch (e){
+      print(e);
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     //Sizing variables
@@ -253,13 +307,16 @@ class _HomeState extends State<Home> {
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(top: 15.0),
-                                    child: Text('Minaga Methyuga',style: TextStyle(decoration: TextDecoration.none,color: Theme.of(context).textTheme.bodyLarge?.color,fontSize: 10),),
+                                    child: Text(
+                                      accountName.isEmpty ? 'Loading..' : accountName.toUpperCase(),
+                                      style: TextStyle(decoration: TextDecoration.none,color: Theme.of(context).textTheme.bodyLarge?.color,fontSize: 12,fontWeight: FontWeight.bold),),
                                   ),
                                   Center(
                                       child: Padding(
                                         padding: const EdgeInsets.only(top: 10.0),
                                         child: Text(
-                                          'Balance LKR 14,000.00',style: TextStyle(decoration: TextDecoration.none,fontSize: 18,color: Theme.of(context).textTheme.bodyLarge?.color),),
+                                            accountBalance.isEmpty ? 'Balance LKR Loading..' : 'Balance LKR $accountBalance',
+                                            style: TextStyle(decoration: TextDecoration.none,fontSize: 18,color: Theme.of(context).textTheme.bodyLarge?.color),),
                                       )
                                   ),
                                   Expanded(
@@ -283,7 +340,8 @@ class _HomeState extends State<Home> {
                                                       mainAxisAlignment: MainAxisAlignment.center,
                                                       children: [
                                                         Text('Income',style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color,fontSize: 10,decoration: TextDecoration.none,fontWeight:FontWeight.normal),),
-                                                        Text('LKR 150,000',style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color,fontSize: 12,decoration: TextDecoration.none,fontWeight:FontWeight.w900),),
+                                                        Text(accountincome.isEmpty ? 'LKR Loading..' : 'LKR $accountincome',
+                                                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color,fontSize: 12,decoration: TextDecoration.none,fontWeight:FontWeight.w900),),
                                                       ],
                                                     ),
                                             ),
@@ -301,7 +359,8 @@ class _HomeState extends State<Home> {
                                                   mainAxisAlignment: MainAxisAlignment.center,
                                                   children: [
                                                     Text('Target Expense',style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color,fontSize: 10,decoration: TextDecoration.none,fontWeight:FontWeight.normal),),
-                                                    Text('LKR 110,000',style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color,fontSize: 12,decoration: TextDecoration.none,fontWeight:FontWeight.w900),),
+                                                    Text(accountexpense.isEmpty ? 'LKR Loading..' : 'LKR $accountexpense',
+                                                      style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color,fontSize: 12,decoration: TextDecoration.none,fontWeight:FontWeight.w900),),
                                                   ],
                                                 ),
                                               ),

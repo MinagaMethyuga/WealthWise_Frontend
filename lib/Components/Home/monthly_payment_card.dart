@@ -55,7 +55,7 @@ class _CardMonthlyState extends State<CardMonthly> {
               height: 20,
               child: Center(
                   child: Padding(
-                    padding: EdgeInsets.only(top: 8.0),
+                    padding: const EdgeInsets.only(top: 8.0),
                     child: Text(
                       widget.paymentAmount,style: TextStyle(fontSize: 12,decoration: TextDecoration.none,color: Theme.of(context).textTheme.bodyLarge?.color,fontWeight: FontWeight.normal),
                     ),
@@ -63,7 +63,7 @@ class _CardMonthlyState extends State<CardMonthly> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 5.0),
+              padding: const EdgeInsets.only(top: 5.0),
               child: Text(widget.paymentDate,style: TextStyle(fontSize: 8,decoration: TextDecoration.none,color: Theme.of(context).textTheme.bodyLarge?.color,fontWeight: FontWeight.normal),),
             )
           ],

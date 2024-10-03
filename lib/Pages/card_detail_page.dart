@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:wealthwise/Pages/home.dart';
 
 class CardDetails extends StatefulWidget {
   const CardDetails({super.key});
@@ -58,17 +60,21 @@ class _CardDetailsState extends State<CardDetails> with SingleTickerProviderStat
       if (accountName.isNotEmpty && accountBalance.isNotEmpty) {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-        var userId = prefs.get('User_ID').toString();
-        var url = Uri.parse('http://10.0.2.2:8000/api/details');
+        var userId = prefs.get('userId').toString();
+        var url = Uri.parse('http://192.168.48.244:8000/api/details');
         var response = await http.post(url, body: {
           'user_id': userId,
           'account_name': accountName,
           'account_balance': accountBalance,
         });
         if (response.statusCode ==200){
-          print('hello boi its working nigga');
+          Navigator.push(context, PageTransition(
+              type: PageTransitionType.fade,
+              duration: const Duration(milliseconds: 400),
+              child: const Home()
+          ));
         }else{
-          print('fffs');
+          print('Oops something went Wrong22');
         }
 
       }else{
@@ -116,7 +122,11 @@ class _CardDetailsState extends State<CardDetails> with SingleTickerProviderStat
                     Padding(
                       padding: EdgeInsets.only(top: height * 0.4),
                       child: TextButton(
-                          onPressed: () {
+                          onPressed: () async {
+                            final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+                            var userId = prefs.get('userId').toString();
+                            print(userId);
                             addUserDetails(_accountName, accountBalanceValue);
                           },
                         style: const ButtonStyle(backgroundColor:MaterialStatePropertyAll(Colors.lightBlue),padding: MaterialStatePropertyAll(EdgeInsets.only(top: 15,bottom: 15,left: 40,right: 40))),
