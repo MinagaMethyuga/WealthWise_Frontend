@@ -30,7 +30,12 @@ class _TopNavigationState extends State<TopNavigation> {
                     const IconButton(onPressed: null,
                         icon: Icon(Icons.settings,color: Colors.white,)
                     ),
-                    const Image(image: AssetImage('Assets/Images/Main_Logo.png'),width: 150,
+                    const Row(
+                      children: [
+                        Image(image: AssetImage('Assets/Images/TransParentIcon.png'),width: 45,
+                        ),
+                        Text('WealthWise',style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w200, decoration: TextDecoration.none),),
+                      ],
                     ),
                     IconButton(onPressed: () {
                       themeProvider.toggleTheme();

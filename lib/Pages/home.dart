@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'Connection.dart';
+
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -35,7 +37,7 @@ class _HomeState extends State<Home> {
 
       var userId = prefs.get('userId').toString();
 
-      var url = Uri.parse('http://192.168.48.244:8000/api/homeCard?user_id=$userId');
+      var url = Uri.parse('$baseUrl/api/homeCard?user_id=$userId');
       var response = await http.get(url);
 
       if(response.statusCode == 200){

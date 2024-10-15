@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:wealthwise/Pages/Connection.dart';
 import 'package:wealthwise/Pages/home.dart';
 
 class CardDetails extends StatefulWidget {
@@ -61,7 +62,7 @@ class _CardDetailsState extends State<CardDetails> with SingleTickerProviderStat
         final SharedPreferences prefs = await SharedPreferences.getInstance();
 
         var userId = prefs.get('userId').toString();
-        var url = Uri.parse('http://192.168.48.244:8000/api/details');
+        var url = Uri.parse('$baseUrl/api/details');
         var response = await http.post(url, body: {
           'user_id': userId,
           'account_name': accountName,

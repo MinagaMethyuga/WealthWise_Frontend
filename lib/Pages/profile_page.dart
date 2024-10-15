@@ -9,6 +9,8 @@ import '../Components/Profile/profile_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import 'Connection.dart';
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -37,15 +39,15 @@ class _ProfilePageState extends State<ProfilePage> {
     userId = prefs.getInt('userId').toString(); // Properly get int and convert to string
     print('Logged in User ID: $userId'); // Print the user ID
 
-    var url = Uri.parse('http://192.168.48.244:8000/api/UserInfo?user_id=$userId');
+    var url = Uri.parse('$baseUrl/api/UserInfo?user_id=$userId');
     var response = await http.get(url);
     if (response.statusCode == 200) {
       print(response.body);
       var data = jsonDecode(response.body);
-      var firstName = data['payload']['first_name'];
-      var lastName = data['payload']['last_name'];
-      var email = data['payload']['email'];
-      profileImageUrl = data['payload']['profile_image']; // Store image URL if exists
+      var firstName = data['payload']['user']['first_name'];
+      var lastName = data['payload']['user']['last_name'];
+      var email = data['payload']['user']['email'];
+      profileImageUrl = data['payload']['user']['profile_image']; // Store image URL if exists
       var userFullName = '$firstName $lastName';
 
       print('User Full Name: $userFullName');
@@ -77,7 +79,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('userId').toString(); // Get userId from SharedPreferences
 
-    var url = Uri.parse('http://192.168.48.244:8000/api/uploadImage');
+    var url = Uri.parse('$baseUrl/api/uploadImage');
 
     // Create multipart request
     var request = http.MultipartRequest('POST', url);
@@ -146,7 +148,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       backgroundImage: _profileImage != null
                           ? FileImage(_profileImage!) as ImageProvider
                           : (profileImageUrl != null
-                          ? NetworkImage('http://192.168.48.244:8000/$profileImageUrl')
+                          ? NetworkImage('$baseUrl/$profileImageUrl')
                           : null), // No fallback image if none exists
                       child: _profileImage == null && profileImageUrl == null
                           ? const Icon(Icons.person)

@@ -6,6 +6,8 @@ import 'package:lottie/lottie.dart';
 import 'package:wealthwise/Pages/card_detail_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'Connection.dart';
+
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -42,7 +44,7 @@ class _RegisterPageState extends State<RegisterPage> {
   //register function
   Future<void> registerUser(BuildContext context, String first_name, String last_name, String email, String password) async {
     // Change the URL to the hosting machine's IPv4 address when running on the physical device.
-    var url = Uri.parse('http://192.168.48.244:8000/api/register');
+    var url = Uri.parse('$baseUrl/api/register');
     var response = await http.post(url, body: {
       'first_name': first_name,
       'last_name': last_name,

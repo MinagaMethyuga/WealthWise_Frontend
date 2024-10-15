@@ -8,6 +8,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'Connection.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -31,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
   }
   Future<void> LoginUser(String email, String password) async {
     try {
-      var url = Uri.parse('http://192.168.48.244:8000/api/login');
+      var url = Uri.parse('$baseUrl/api/login');
       var response = await http.post(url, body: {
         'email': email,
         'password': password,
